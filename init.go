@@ -3,7 +3,7 @@ package sdkbox
 import (
 	"github.com/textthree/provider/config"
 	"github.com/textthree/provider/core"
-	"sdkbox/alioss"
+	"github.com/textthree/sdkbox/alioss"
 )
 
 var services *core.ServicesContainer
