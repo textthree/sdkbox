@@ -1,4 +1,4 @@
-module sdkbox
+module github.com/textthree/sdkbox
 
 go 1.22
 
