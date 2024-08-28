@@ -138,12 +138,14 @@ func (self *AliossService) ListObjects(path string, maxRows int) (list []Objects
 		provider.Clog().Error(err.Error())
 		return
 	}
+	cfg := self.cfgSvc.GetAliOss()
 	for _, object := range result.Objects {
 		if object.Size > 0 {
+			fileName := strkit.GetLastSegment(object.Key, "/")
 			list = append(list, Objects{
 				Path:       object.Key,
-				ObjectName: strkit.GetLastSegment(path, "/"),
-				AccessUrl:  "",
+				ObjectName: fileName,
+				AccessUrl:  cfg.AccessUrl + object.Key,
 			})
 		}
 	}
