@@ -4,7 +4,7 @@ go 1.22
 
 require (
 	github.com/aliyun/aliyun-oss-go-sdk v3.0.2+incompatible
-	github.com/textthree/provider v1.0.3
+	github.com/textthree/provider v1.1.2
 )
 
 require (
@@ -21,7 +21,7 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.19.0 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
-	github.com/textthree/cvgokit v1.0.3 // indirect
+	github.com/textthree/cvgokit v1.1.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9 // indirect
@@ -35,5 +35,6 @@ require (
 
 
 replace (
-	github.com/textthree/provider v1.0.3 => /Users/t3/t3/github/provider
+	//github.com/textthree/provider v1.0.3 => /Users/t3/t3/github/provider
+	//github.com/textthree/cvgokit => /Users/t3/t3/github/cvgokit
 )

@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"errors"
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
+	"github.com/textthree/cvgokit/strkit"
 	"github.com/textthree/provider"
 	"github.com/textthree/provider/config"
 	"github.com/textthree/provider/core"
@@ -21,7 +22,7 @@ type Service interface {
 	UploadFromByteArrayToOss(string, []byte) error
 	UploadFromLocalFile(objectkey, localFilePath string) (err error)
 	ListDir(path string, maxRows int) []OssDirList
-	ListObjects(path string, maxRows int) []string
+	ListObjects(path string, maxRows int) []Objects
 }
 
 type AliossService struct {
@@ -123,7 +124,7 @@ func (self *AliossService) ListDir(path string, maxRows int) (list []OssDirList)
 }
 
 // 列举指定路径下的所有文件的路径，字典序
-func (self *AliossService) ListObjects(path string, maxRows int) (list []string) {
+func (self *AliossService) ListObjects(path string, maxRows int) (list []Objects) {
 	var bucket *oss.Bucket
 	var initSuccess bool
 	if bucket, initSuccess = self.initClient(); !initSuccess {
@@ -139,8 +140,11 @@ func (self *AliossService) ListObjects(path string, maxRows int) (list []string)
 	}
 	for _, object := range result.Objects {
 		if object.Size > 0 {
-			url := object.Key
-			list = append(list, url)
+			list = append(list, Objects{
+				Path:       object.Key,
+				ObjectName: strkit.GetLastSegment(path, "/"),
+				AccessUrl:  "",
+			})
 		}
 	}
 	return

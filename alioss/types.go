@@ -7,3 +7,9 @@ type OssDirList struct {
 	DirName        string
 	LastModifyTime time.Time
 }
+
+type Objects struct {
+	Path           string
+	ObjectName     string
+	AccessUrl     string
+}
