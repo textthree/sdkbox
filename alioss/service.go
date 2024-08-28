@@ -79,7 +79,7 @@ func (self *AliossService) UploadFromLocalFile(objectkey, localFilePath string) 
 func (self *AliossService) ListDir(path string, maxRows int) (list []OssDirList) {
 	var bucket *oss.Bucket
 	var initSuccess bool
-	if bucket, initSuccess = self.initClient(); initSuccess {
+	if bucket, initSuccess = self.initClient(); !initSuccess {
 		return
 	}
 	result, err := bucket.ListObjects(
@@ -126,7 +126,7 @@ func (self *AliossService) ListDir(path string, maxRows int) (list []OssDirList)
 func (self *AliossService) ListObjects(path string, maxRows int) (list []string) {
 	var bucket *oss.Bucket
 	var initSuccess bool
-	if bucket, initSuccess = self.initClient(); initSuccess {
+	if bucket, initSuccess = self.initClient(); !initSuccess {
 		return
 	}
 	result, err := bucket.ListObjects(
