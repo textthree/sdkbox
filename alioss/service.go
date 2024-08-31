@@ -173,7 +173,7 @@ func (self *AliossService) ListObjects(path string, maxRows int, sortType ...int
 	}
 	// 排序
 	if order == SortTypeNumber {
-		// 按数字升序
+		// 按标题的数字升序
 		sort.Slice(list, func(i, j int) bool {
 			stri := strings.Split(list[i].ObjectName, ".")[0]
 			strj := strings.Split(list[j].ObjectName, ".")[0]
