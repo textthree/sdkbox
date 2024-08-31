@@ -12,6 +12,7 @@ import (
 	"github.com/textthree/provider/config"
 	"github.com/textthree/provider/core"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -21,8 +22,8 @@ type Service interface {
 	init()
 	UploadFromByteArrayToOss(string, []byte) error
 	UploadFromLocalFile(objectkey, localFilePath string) (err error)
-	ListDir(path string, maxRows int) []OssDirList
-	ListObjects(path string, maxRows int) []Objects
+	ListDir(path string, maxRows int, sortType ...int8) []OssDirList
+	ListObjects(path string, maxRows int, sortType ...int8) []Objects
 }
 
 type AliossService struct {
@@ -77,7 +78,12 @@ func (self *AliossService) UploadFromLocalFile(objectkey, localFilePath string) 
 }
 
 // 列举指定路径下的目录，不递归，按修改时间倒序
-func (self *AliossService) ListDir(path string, maxRows int) (list []OssDirList) {
+// sortType 排序方式，定义在 types 中，默认字典序
+func (self *AliossService) ListDir(path string, maxRows int, sortType ...int8) (list []OssDirList) {
+	order := int8(0)
+	if len(sortType) > 0 {
+		order = sortType[0]
+	}
 	var bucket *oss.Bucket
 	var initSuccess bool
 	if bucket, initSuccess = self.initClient(); !initSuccess {
@@ -93,38 +99,54 @@ func (self *AliossService) ListDir(path string, maxRows int) (list []OssDirList)
 		return
 	}
 	for _, commonPrefix := range result.CommonPrefixes {
+		arr := strings.Split(commonPrefix, "/")
 		item := OssDirList{
 			Path:    commonPrefix,
-			DirName: strings.Split(commonPrefix, "/")[1],
+			DirName: arr[len(arr)-2],
 		}
 		list = append(list, item)
 	}
-	// 按时间排序
-	for index, item := range list {
-		result, err = bucket.ListObjects(
-			oss.Prefix(item.Path),
-			oss.MaxKeys(100), // 最多列举 100 个
-		)
-		var lastModifiyTIme time.Time
-		if len(result.Objects) > 0 {
-			prev := result.Objects[0].LastModified
-			for _, v := range result.Objects {
-				if v.LastModified.After(prev) {
-					prev = v.LastModified
+	// 按修时间倒序
+	if order == SortTypeModifyTimeDesc {
+		for index, item := range list {
+			result, err = bucket.ListObjects(
+				oss.Prefix(item.Path),
+				oss.MaxKeys(100), // 最多列举 100 个
+			)
+			var lastModifiyTIme time.Time
+			if len(result.Objects) > 0 {
+				prev := result.Objects[0].LastModified
+				for _, v := range result.Objects {
+					if v.LastModified.After(prev) {
+						prev = v.LastModified
+					}
 				}
+				lastModifiyTIme = prev
 			}
-			lastModifiyTIme = prev
+			list[index].LastModifyTime = lastModifiyTIme
 		}
-		list[index].LastModifyTime = lastModifiyTIme
+		sort.Slice(list, func(i, j int) bool {
+			return list[i].LastModifyTime.After(list[j].LastModifyTime)
+		})
+	} else if order == SortTypeNumber {
+		// 按数字升序
+		sort.Slice(list, func(i, j int) bool {
+			stri := strings.Split(list[i].DirName, ".")[0]
+			strj := strings.Split(list[j].DirName, ".")[0]
+			numi, _ := strconv.Atoi(stri)
+			numj, _ := strconv.Atoi(strj)
+			return numi < numj
+		})
 	}
-	sort.Slice(list, func(i, j int) bool {
-		return list[i].LastModifyTime.After(list[j].LastModifyTime)
-	})
 	return
 }
 
 // 列举指定路径下的所有文件的路径，字典序
-func (self *AliossService) ListObjects(path string, maxRows int) (list []Objects) {
+func (self *AliossService) ListObjects(path string, maxRows int, sortType ...int8) (list []Objects) {
+	order := int8(0)
+	if len(sortType) > 0 {
+		order = sortType[0]
+	}
 	var bucket *oss.Bucket
 	var initSuccess bool
 	if bucket, initSuccess = self.initClient(); !initSuccess {
@@ -148,6 +170,17 @@ func (self *AliossService) ListObjects(path string, maxRows int) (list []Objects
 				AccessUrl:  cfg.AccessUrl + object.Key,
 			})
 		}
+	}
+	// 排序
+	if order == SortTypeNumber {
+		// 按数字升序
+		sort.Slice(list, func(i, j int) bool {
+			stri := strings.Split(list[i].ObjectName, ".")[0]
+			strj := strings.Split(list[j].ObjectName, ".")[0]
+			numi, _ := strconv.Atoi(stri)
+			numj, _ := strconv.Atoi(strj)
+			return numi < numj
+		})
 	}
 	return
 }
