@@ -107,7 +107,7 @@ func (self *AliossService) ListDir(path string, maxRows int, sortType ...int8) (
 		list = append(list, item)
 	}
 	// 按修时间倒序
-	if order == SortTypeModifyTimeDesc {
+	if order == SortTypeModifyTimeDesc || order == SortTypeModifyTimeAsc {
 		for index, item := range list {
 			result, err = bucket.ListObjects(
 				oss.Prefix(item.Path),
@@ -126,7 +126,11 @@ func (self *AliossService) ListDir(path string, maxRows int, sortType ...int8) (
 			list[index].LastModifyTime = lastModifiyTIme
 		}
 		sort.Slice(list, func(i, j int) bool {
-			return list[i].LastModifyTime.After(list[j].LastModifyTime)
+			if order  == SortTypeModifyTimeDesc {
+				return list[i].LastModifyTime.After(list[j].LastModifyTime)
+			} else {
+				return list[i].LastModifyTime.Before(list[j].LastModifyTime)
+			}
 		})
 	} else if order == SortTypeNumber {
 		// 按数字升序

@@ -14,5 +14,6 @@ type Objects struct {
 	AccessUrl  string
 }
 
-const SortTypeModifyTimeDesc = 1
-const SortTypeNumber = 2 // 按第一个数字。如：1.xxx.jpg 取第一个点之前的数字
+const SortTypeModifyTimeAsc = 1
+const SortTypeModifyTimeDesc = 2
+const SortTypeNumber = 3 // 按第一个数字。如：1.xxx.jpg 取第一个点之前的数字
